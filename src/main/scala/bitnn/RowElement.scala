@@ -89,4 +89,25 @@ class RowElement(width: Int) extends Module {
       accumulator := ceil
     }
   }
+
+  // maybe combine this with the condition aboce
+  when (mode)
+  {
+    // propagate error
+    when (io.gradIn.p) {
+      // +1 * +1 = +1
+      // +1 * -1 = -1
+      io.gradOut.p = (accumulator > 0)
+      io.gradOut.n = (accumulator < 0)
+    }.elseWhen (io.gradIn.n) {
+      // -1 * +1 = -1
+      // -1 * -1 = +1
+
+      io.gradOut.p = (accumulator < 0)
+      io.gradOut.n = (accumulator > 0)
+    }.elseWhen((!io.gradIn.n) && (!io.gradIn.p)) {
+      io.gradOut.p = false
+      io.gradOut.n = false
+    }
+  }
 }

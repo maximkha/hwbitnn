@@ -21,9 +21,6 @@ class BiasElement(width: Int) extends Module {
     // or backward propagating
     val mode = Input(Bool())
     
-    // gradOut is the resulting error of the input
-    val gradOut = Output(SignedIO())
-    
     // out stores the result of the forward propagation of the BiasElement
     val out = Output(SignedIO())
   })
@@ -66,4 +63,8 @@ class BiasElement(width: Int) extends Module {
       accumulator := ceil
     }
   }
+
+  // BiasElements do not propagate any error because they were not triggered by an input
+  // so we don't have a grad out!
+
 }
