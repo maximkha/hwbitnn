@@ -44,7 +44,8 @@ class Layer(inWidth: Int, outWidth: Int, accumulatorWidth: Int) extends Module {
     row
   }
 
-  for (var colIndex <- 0 to inWidth) {
+  var colIndex = 0
+  for (colIndex <- 0 to inWidth) {
     val posCount = gradPosTable(colIndex.U).count()
     val negCount = gradNegTable(colIndex.U).count()
 
