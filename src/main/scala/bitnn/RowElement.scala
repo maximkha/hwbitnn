@@ -3,14 +3,7 @@ package bitnn
 import scala.math._
 import chisel3._
 import chisel3.util._
-
-// SignedIO represents either +1, 0, or -1
-// This is used for the accumulation of neuron outputs
-// as well as representing gradients
-class SignedIO extends Bundle {
-  val p = Bool()
-  val n = Bool()
-}
+import bitnn._
 
 // Represents a row element in a matrix
 // each row represents a neuron.
@@ -53,18 +46,18 @@ class RowElement(width: Int) extends Module {
   // If our accumulator is positive, and the RowElement fired,
   // the RowElement outputs a +1, and if the accumulator is negative,
   // the RowElement outputs a -1
-  out.p := fire && (accumulator > 0)
-  out.n := fire && (accumulator <= 0)
+  io.out.p := io.fire && (accumulator > 0)
+  io.out.n := io.fire && (accumulator <= 0)
   
   // For backward propigation,
   // we need to store whether the RowElement
   // fired / recieved an input
   val didFire = RegInit(0.B)
-  when (!mode) {
+  when (!io.mode) {
     didFire := fire
   }
 
-  when (mode && didFire) {
+  when (io.mode && didFire) {
     // For saturating addition we need to keep track of the minimum
     // and maximum values of the accumulator, to make sure they don't
     // wrap around. This is necessary for backprop to work!
@@ -74,40 +67,40 @@ class RowElement(width: Int) extends Module {
     val minInt = -pow(2, width - 1)
     
     // now calculate the incremented value (accounting for saturation)
-    ceil = Mux(accumulator === maxInt.U(width.W), accumulator, accumulator + 1)
+    val saturated_increment = Mux(accumulator === maxInt.U(width.W), accumulator, accumulator + 1.S)
     // now calculate the decremented value (accounting for saturation)
-    floor = Mux(accumulator === minInt.U(width.W), accumulator, accumulator - 1)
+    val saturated_decrement = Mux(accumulator === minInt.U(width.W), accumulator, accumulator - 1.S)
 
     // update the accumulator with the error signal.
     when (io.gradIn.p) {
       // if the error was positive (we overshot)
       // decrement the accumulator
-      accumulator := floor
-    }.elseWhen (io.gradIn.n) {
+      accumulator := saturated_decrement
+    }.elsewhen (io.gradIn.n) {
       // if the error was negative (we undershot)
       // increment the accumulator
-      accumulator := ceil
+      accumulator := saturated_increment
     }
   }
 
   // maybe combine this with the condition aboce
-  when (mode)
+  when (io.mode)
   {
     // propagate error
     when (io.gradIn.p) {
       // +1 * +1 = +1
       // +1 * -1 = -1
-      io.gradOut.p = (accumulator > 0)
-      io.gradOut.n = (accumulator < 0)
-    }.elseWhen (io.gradIn.n) {
+      io.gradOut.p = (accumulator > 0.S)
+      io.gradOut.n = (accumulator < 0.S)
+    }.elsewhen (io.gradIn.n) {
       // -1 * +1 = -1
       // -1 * -1 = +1
 
-      io.gradOut.p = (accumulator < 0)
-      io.gradOut.n = (accumulator > 0)
+      io.gradOut.p = (accumulator < 0.S)
+      io.gradOut.n = (accumulator > 0.S)
     }.otherwise {
-      io.gradOut.p = false
-      io.gradOut.n = false
+      io.gradOut.p = false.B
+      io.gradOut.n = false.B
     }
     // io.gradOut.p = (io.gradIn.n ^ (accumulator > 0)) & (io.gradIn.n | io.gradIn.p)
     // io.gradOut.n = (io.gradIn.n ^ (accumulator < 0)) & (io.gradIn.n | io.gradIn.p)

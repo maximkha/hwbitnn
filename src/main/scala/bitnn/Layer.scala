@@ -15,16 +15,16 @@ class Layer(inWidth: Int, outWidth: Int, accumulatorWidth: Int) extends Module {
 
   // For the matrix, we have to add one more column
   // corresponding to the bias element
-  val posTable = VecInit.fill(outWidth, VecInit.fill(inWidth+1, 0.B))
-  val negTable = VecInit.fill(outWidth, VecInit.fill(inWidth+1, 0.B))
-  val gradPosTable = VecInit.fill(inWidth, VecInit.fill(outWidth, 0.B))
-  val gradNegTable = VecInit.fill(inWidth, VecInit.fill(outWidth, 0.B))
+  val posTable = VecInit.fill(outWidth, VecInit.fill(inWidth+1, false.B))
+  val negTable = VecInit.fill(outWidth, VecInit.fill(inWidth+1, false.B))
+  val gradPosTable = VecInit.fill(inWidth, VecInit.fill(outWidth, false.B))
+  val gradNegTable = VecInit.fill(inWidth, VecInit.fill(outWidth, false.B))
 
   val mat = VecInit.tabulate(outWidth) { rowIndex =>
     val biaselem = BiasElement(accumulatorWidth)
     
     val row = VecInit.tabulate(inWidth) { colIndex =>
-      val rowelem = RoweElement(accumulatorWidth)
+      val rowelem = RowElement(accumulatorWidth)
       rowelem.io.fire := io.inVec(colIndex.U)
       rowelem.io.out.p := posTable(rowIndex.U)(colIndex.U)
       rowelem.io.out.n := negTable(rowIndex.U)(colIndex.U)

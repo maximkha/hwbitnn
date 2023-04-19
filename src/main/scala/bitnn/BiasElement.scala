@@ -35,10 +35,10 @@ class BiasElement(width: Int) extends Module {
   // If our accumulator is positive, and the BiasElement is in forward mode,
   // the BiasElement outputs a +1, and if the accumulator is negative,
   // the BiasElement outputs a -1
-  out.p := (!mode) && (accumulator > 0)
-  out.n := (!mode) && (accumulator <= 0)
+  io.out.p := (!io.mode) && (accumulator > 0.S)
+  io.out.n := (!io.mode) && (accumulator <= 0.S)
 
-  when (mode) {
+  when (io.mode) {
     // For saturating addition we need to keep track of the minimum
     // and maximum values of the accumulator, to make sure they don't
     // wrap around. This is necessary for backprop to work!
@@ -48,19 +48,19 @@ class BiasElement(width: Int) extends Module {
     val minInt = -pow(2, width - 1)
     
     // now calculate the incremented value (accounting for saturation)
-    ceil = Mux(accumulator === maxInt.U(width.W), accumulator, accumulator + 1)
+    val saturated_increment = Mux(accumulator === maxInt.U(width.W), accumulator, accumulator + 1.S)
     // now calculate the decremented value (accounting for saturation)
-    floor = Mux(accumulator === minInt.U(width.W), accumulator, accumulator - 1)
+    val saturated_decrement = Mux(accumulator === minInt.U(width.W), accumulator, accumulator - 1.S)
 
     // update the accumulator with the error signal.
     when (io.gradIn.p) {
       // if the error was positive (we overshot)
       // decrement the accumulator
-      accumulator := floor
-    }.elseWhen (io.gradIn.n) {
+      accumulator := saturated_decrement
+    }.elsewhen (io.gradIn.n) {
       // if the error was negative (we undershot)
       // increment the accumulator
-      accumulator := ceil
+      accumulator := saturated_increment
     }
   }
 
