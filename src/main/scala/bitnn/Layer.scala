@@ -20,15 +20,15 @@ class Layer(inWidth: Int, outWidth: Int, neuronWidth: Int) extends Module {
 
   val mat = VecInit.tabulate(outWidth) { rowIndex =>
     val row = VecInit.tabulate(inWidth) { colIndex =>
-      val neuron = Neuron(neuronWidth))
-      neuron.io.fire := io.inVec(colIndex.U)
-      neuron.io.out.p := posTable(rowIndex.U)(colIndex.U)
-      neuron.io.out.n := negTable(rowIndex.U)(colIndex.U)
-      neuron.io.gradIn := io.gradIn(rowIndex.U)
-      neuron.io.gradOut.p := gradPosTable(rowIndex.U)(colIndex.U)
-      neuron.io.gradOut.n := gradNegTable(rowIndex.U)(colIndex.U)
-      neuron.io.mode := io.mode
-      neuron
+      val rowelem = RoweElement(neuronWidth))
+      rowelem.io.fire := io.inVec(colIndex.U)
+      rowelem.io.out.p := posTable(rowIndex.U)(colIndex.U)
+      rowelem.io.out.n := negTable(rowIndex.U)(colIndex.U)
+      rowelem.io.gradIn := io.gradIn(rowIndex.U)
+      rowelem.io.gradOut.p := gradPosTable(rowIndex.U)(colIndex.U)
+      rowelem.io.gradOut.n := gradNegTable(rowIndex.U)(colIndex.U)
+      rowelem.io.mode := io.mode
+      rowelem
     }
     io.outVec(rowIndex.U) := posTable(rowIndex.U).count() > negTable(rowIndex.U).count()
     row
