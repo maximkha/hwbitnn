@@ -105,9 +105,11 @@ class RowElement(width: Int) extends Module {
 
       io.gradOut.p = (accumulator < 0)
       io.gradOut.n = (accumulator > 0)
-    }.elseWhen((!io.gradIn.n) && (!io.gradIn.p)) {
+    }.otherwise {
       io.gradOut.p = false
       io.gradOut.n = false
     }
+    // io.gradOut.p = (io.gradIn.n ^ (accumulator > 0)) & (io.gradIn.n | io.gradIn.p)
+    // io.gradOut.n = (io.gradIn.n ^ (accumulator < 0)) & (io.gradIn.n | io.gradIn.p)
   }
 }

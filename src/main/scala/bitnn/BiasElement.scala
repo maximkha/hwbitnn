@@ -3,7 +3,7 @@ package bitnn
 import scala.math._
 import chisel3._
 import chisel3.util._
-import bitnn.
+import bitnn._
 
 // A bias element represents a 
 // trainiable constant that adds
