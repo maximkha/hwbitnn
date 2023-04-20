@@ -8,6 +8,7 @@ class Layer(inWidth: Int, outWidth: Int, accumulatorWidth: Int) extends Module {
   val io = IO(new Bundle {
     val inVec = Input(Vec(inWidth, Bool()))
     val outVec = Input(Vec(outWidth, Bool()))
+    // Fix vec of signedio
     val gradIn = Input(Vec(outWidth, SignedIO()))
     val gradOut = Input(Vec(inWidth, SignedIO()))
     val mode = Input(Bool())
@@ -15,16 +16,16 @@ class Layer(inWidth: Int, outWidth: Int, accumulatorWidth: Int) extends Module {
 
   // For the matrix, we have to add one more column
   // corresponding to the bias element
-  val posTable = VecInit.fill(outWidth, VecInit.fill(inWidth+1, false.B))
-  val negTable = VecInit.fill(outWidth, VecInit.fill(inWidth+1, false.B))
-  val gradPosTable = VecInit.fill(inWidth, VecInit.fill(outWidth, false.B))
-  val gradNegTable = VecInit.fill(inWidth, VecInit.fill(outWidth, false.B))
+  val posTable = VecInit.fill(outWidth)(n =>VecInit.fill(inWidth+1)(false.B))
+  val negTable = VecInit.fill(outWidth)(n => VecInit.fill(inWidth+1)(false.B))
+  val gradPosTable = VecInit.fill(inWidth)(n => VecInit.fill(outWidth)(false.B))
+  val gradNegTable = VecInit.fill(inWidth)(n => VecInit.fill(outWidth)(false.B))
 
   val mat = VecInit.tabulate(outWidth) { rowIndex =>
-    val biaselem = BiasElement(accumulatorWidth)
+    val biaselem = new BiasElement(accumulatorWidth)
     
     val row = VecInit.tabulate(inWidth) { colIndex =>
-      val rowelem = RowElement(accumulatorWidth)
+      val rowelem = new RowElement(accumulatorWidth)
       rowelem.io.fire := io.inVec(colIndex.U)
       rowelem.io.out.p := posTable(rowIndex.U)(colIndex.U)
       rowelem.io.out.n := negTable(rowIndex.U)(colIndex.U)

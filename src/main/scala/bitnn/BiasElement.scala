@@ -15,14 +15,14 @@ class BiasElement(width: Int) extends Module {
     // gradIn is used for gradient calculations,
     // it represents the sign of the error w.r.t to the neuron output
     // or in our case the row of RowElements (and bias element if it's there)
-    val gradIn = Input(SignedIO())
+    val gradIn = Input(new SignedIO())
     
     // Mode represents whether the BiasElement is forward propagating
     // or backward propagating
     val mode = Input(Bool())
     
     // out stores the result of the forward propagation of the BiasElement
-    val out = Output(SignedIO())
+    val out = Output(new SignedIO())
   })
 
   // For the system to work correctly,

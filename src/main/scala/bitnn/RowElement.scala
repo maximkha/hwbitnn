@@ -23,17 +23,17 @@ class RowElement(width: Int) extends Module {
     // gradIn is used for gradient calculations,
     // it represents the sign of the error w.r.t to the neuron output
     // or in our case the row of RowElements
-    val gradIn = Input(SignedIO())
+    val gradIn = Input(new SignedIO())
     
     // Mode represents whether the RowElement is forward propagating
     // or backward propagating
     val mode = Input(Bool())
     
     // gradOut is the resulting error of the input
-    val gradOut = Output(SignedIO())
+    val gradOut = Output(new SignedIO())
     
     // out stores the result of the forward propagation of the RowElement
-    val out = Output(SignedIO())
+    val out = Output(new SignedIO())
   })
 
   // For the system to work correctly,
@@ -46,8 +46,8 @@ class RowElement(width: Int) extends Module {
   // If our accumulator is positive, and the RowElement fired,
   // the RowElement outputs a +1, and if the accumulator is negative,
   // the RowElement outputs a -1
-  io.out.p := io.fire && (accumulator > 0)
-  io.out.n := io.fire && (accumulator <= 0)
+  io.out.p := io.fire && (accumulator > 0.S)
+  io.out.n := io.fire && (accumulator <= 0.S)
   
   // For backward propigation,
   // we need to store whether the RowElement
